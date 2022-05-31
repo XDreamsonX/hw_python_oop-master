@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import Dict, List, Type
 
 
 @dataclass
@@ -21,9 +21,9 @@ class InfoMessage:
 
 class Training:
     '''Базовый класс тренировки.'''
-    LEN_STEP = 0.65
-    M_IN_KM = 1000
-    MIN_IN_H = 60
+    LEN_STEP: float = 0.65
+    M_IN_KM: int = 1000
+    MIN_IN_H: int = 60
 
     def __init__(self,
                  action: int,
@@ -44,8 +44,8 @@ class Training:
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий."""
-        raise NotImplementedError('Класс: {class} должен реализовывать метод'
-                                  'get_spent_calories')
+        raise NotImplementedError(f'Класс: {self.__class__.__name__} должен'
+                                  'реализовывать метод get_spent_calories')
 
     def show_training_info(self) -> InfoMessage:
         '''Вернуть информационное сообщение о выполненной тренировке.'''
@@ -58,25 +58,16 @@ class Training:
 
 class Running(Training):
     '''Тренировка: бег.'''
-    CALORIES_FIRST = 18
-    CALORIES_SECOND = 20
-    MIN_IN_H = 60
-
-    def __init__(self,
-                 action: int,
-                 duration: float,
-                 weight: float):
-        self.action = action
-        self.duration = duration
-        self.weight = weight
+    CALORIES_FIRST: int = 18
+    CALORIES_SECOND: int = 20
 
     def get_spent_calories(self) -> float:
         return ((self.CALORIES_FIRST * self.get_mean_speed()
                 - self.CALORIES_SECOND)
-                * self.weight / self.M_IN_KM * self.duration * self.MIN_IN_H)
+                * self.weight / self.M_IN_KM
+                * self.duration * self.MIN_IN_H)
 
 
-@dataclass
 class SportsWalking(Training):
     '''Тренировка: спортивная ходьба.'''
     CALORIES_FIRST = 0.035
@@ -88,19 +79,16 @@ class SportsWalking(Training):
                  duration: float,
                  weight: float,
                  height: float):
-        self.action = action
-        self.duration = duration
-        self.weight = weight
+        super().__init__(action, duration, weight)
         self.height = height
 
     def get_spent_calories(self):
         return ((self.CALORIES_FIRST * self.weight
-                + (self.get_mean_speed()**2 // self.height)
+                + (self.get_mean_speed() ** 2 // self.height)
                 * self.CALORIES_SECOND * self.weight) * (self.duration
                 * self.MIN_IN_H))
 
 
-@dataclass
 class Swimming(Training):
     '''Тренировка: плавание.'''
     LEN_STEP = 1.38
@@ -113,9 +101,7 @@ class Swimming(Training):
                  weight: float,
                  length_pool: int,
                  count_pool: int):
-        self.action = action
-        self.duration = duration
-        self.weight = weight
+        super().__init__(action, duration, weight)
         self.length_pool = length_pool
         self.count_pool = count_pool
 
@@ -129,18 +115,19 @@ class Swimming(Training):
                 * self.CALORIES_SECOND * self.weight)
 
 
-def read_package(workout_type: List[str], data: List[int]) -> Training:
+def read_package(workout_type: str, data: List[int]) -> Training:
     '''Прочитать данные полученные от датчиков.'''
-    data_type = {'SWM': Swimming, 'RUN': Running, 'WLK': SportsWalking}
+    data_type: Dict[str, Type[Training]] = {'SWM': Swimming, 'RUN': Running,
+                                            'WLK': SportsWalking}
     if workout_type in data_type:
         return data_type[workout_type](*data)
     else:
-        return 'Тренировка отсутствует'
+        raise ValueError
 
 
 def main(training: Training) -> None:
     '''Главная функция.'''
-    info = Training.show_training_info(training)
+    info = training.show_training_info()
     print(InfoMessage.get_message(info))
 
 
