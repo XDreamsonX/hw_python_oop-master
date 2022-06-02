@@ -58,20 +58,20 @@ class Training:
 
 class Running(Training):
     '''Тренировка: бег.'''
-    МНОЖИТЕЛЬ_СКОРОСТИ: int = 18
-    УМЕНЬШИТЕЛЬ_СКОРОСТИ: int = 20
+    SPEED_MULTIPLIER: int = 18
+    SPEED_REDUCER: int = 20
 
     def get_spent_calories(self) -> float:
-        return ((self.МНОЖИТЕЛЬ_СКОРОСТИ * self.get_mean_speed()
-                - self.УМЕНЬШИТЕЛЬ_СКОРОСТИ)
+        return ((self.SPEED_MULTIPLIER * self.get_mean_speed()
+                - self.SPEED_REDUCER)
                 * self.weight / self.M_IN_KM
                 * self.duration * self.MIN_IN_H)
 
 
 class SportsWalking(Training):
     '''Тренировка: спортивная ходьба.'''
-    CALORIES_FIRST: int = 0.035
-    CALORIES_SECOND: int = 0.029
+    WEIGHT_MULTIPLIER: int = 0.035
+    WEIGHT_MULTIPLIER2: int = 0.029
 
     def __init__(self,
                  action: int,
@@ -82,17 +82,17 @@ class SportsWalking(Training):
         self.height = height
 
     def get_spent_calories(self):
-        return ((self.CALORIES_FIRST * self.weight
+        return ((self.WEIGHT_MULTIPLIER * self.weight
                 + (self.get_mean_speed() ** 2 // self.height)
-                * self.CALORIES_SECOND * self.weight) * (self.duration
+                * self.WEIGHT_MULTIPLIER2 * self.weight) * (self.duration
                 * self.MIN_IN_H))
 
 
 class Swimming(Training):
     '''Тренировка: плавание.'''
     LEN_STEP: float = 1.38
-    CALORIES_FIRST: float = 1.1
-    CALORIES_SECOND: int = 2
+    SPEED_INCREASER: float = 1.1
+    SPEED_MULTIPLIER: int = 2
 
     def __init__(self,
                  action: int,
@@ -110,8 +110,8 @@ class Swimming(Training):
                 * self.count_pool / self.M_IN_KM / self.duration)
 
     def get_spent_calories(self) -> float:
-        return ((self.get_mean_speed() + self.CALORIES_FIRST)
-                * self.CALORIES_SECOND * self.weight)
+        return ((self.get_mean_speed() + self.SPEED_INCREASER)
+                * self.SPEED_MULTIPLIER * self.weight)
 
 
 def read_package(workout_type: str, data: List[int]) -> Training:
